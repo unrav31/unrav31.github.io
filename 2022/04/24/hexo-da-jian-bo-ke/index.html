@@ -4,8 +4,17 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Hello World, Hexo">
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hex">
+    <meta name="keywords" content="Hexo搭建博客, Hexo">
+    <meta name="description" content="安装配置Hexo安装node环境
+brew install node
+npm install -g hexo-cli
+
+本地新建文件夹，然后初始化hexo
+mkdir blog
+cd blog
+hexo init blog
+
+blog文件夹">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -19,7 +28,7 @@
 
     
 
-    <title>Hello World | Hexo</title>
+    <title>Hexo搭建博客 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -309,12 +318,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/17.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Hello World</h1>
+                    <h1 class="description center-align post-title">Hexo搭建博客</h1>
                 </div>
             </div>
         </div>
@@ -428,9 +437,13 @@
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                          <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
-                          </div>
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83/">
+                                <span class="chip bg-color">安装环境</span>
+                            </a>
+                        
+                    </div>
                     
                 </div>
                 <div class="col s5 right-align">
@@ -451,14 +464,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    73
+                    481
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    1 分
+                    2 分
                 </div>
                 
 
@@ -476,19 +489,60 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo new <span class="token string">"My New Post"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+                <h1 id="安装配置Hexo"><a href="#安装配置Hexo" class="headerlink" title="安装配置Hexo"></a>安装配置Hexo</h1><p>安装node环境</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">brew <span class="token function">install</span> <span class="token function">node</span>
+<span class="token function">npm</span> <span class="token function">install</span> -g hexo-cli<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>本地新建文件夹，然后初始化hexo</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> blog
+<span class="token builtin class-name">cd</span> blog
+hexo init blog<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo generate<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><strong>blog</strong>文件夹为根文件夹，其中配置文件**_config.yml<strong>是配置hexo的，另外在</strong>themes<strong>文件夹下也有</strong>_config.yml**文件，是用于配置主题的。</p>
+<p>在GitHub新建仓库，仓库名为**[github用户名].github.io<strong>，修改根文件夹下的</strong>_config.yml<strong>的</strong>deploy<strong>配置，将</strong>repo<strong>改为刚才的仓库路径，</strong>type**改为“git”，如下：</p>
+<pre class="line-numbers language-yml" data-language="yml"><code class="language-yml">deploy:
+  type: &#39;git&#39;
+  repo: https:&#x2F;&#x2F;github.com&#x2F;unrav31&#x2F;unrav31.github.io.git
+  branch: master
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo deploy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>安装hexo-deployer-git，这样才能将本地文件部署到github中：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">npm</span> <span class="token function">install</span> hexo-deployer-git --save<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p>随后按顺序输入以下命令：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">hexo clean
+hexo g
+hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p><code>hexo clean</code>：清除缓存</p>
+<p><code>hexo g</code>：hexo generate，生成</p>
+<p><code>hexo d</code>：hexo deploy，部署到github</p>
+<p>这时候可以在github.io查看到搭建好的项目了。</p>
+<h1 id="配置Hexo主题"><a href="#配置Hexo主题" class="headerlink" title="配置Hexo主题"></a>配置Hexo主题</h1><p>默认主题不是很好看，我这里是用的 <a target="_blank" rel="noopener" href="https://github.com/blinkfox/hexo-theme-matery/blob/develop/README_CN.md">blinkfox</a> ，可以在 <a target="_blank" rel="noopener" href="https://hexo.io/themes/">themes</a> 找到自己喜欢的主题。</p>
+<p>进入到 <strong>themes</strong> 文件夹下，然后下载blinkfox：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> themes
+<span class="token function">git</span> clone https://github.com/blinkfox/hexo-theme-matery.git<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>修改hexo根目录下的 <strong>_config.yml</strong> 文件的 <code>themes</code> 值：</p>
+<pre class="line-numbers language-yml" data-language="yml"><code class="language-yml">theme: hexo-theme-matery<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>关于 _config.yml 的其他修改建议：</p>
+<ul>
+<li>修改 <code>_config.yml</code> 的 <code>url</code> 的值为你的网站主 <code>URL</code>（如：<code>http://xxx.github.io</code>）。</li>
+<li>建议修改两个 <code>per_page</code> 的分页条数值为 <code>6</code> 的倍数，如：<code>12</code>、<code>18</code> 等，这样文章列表在各个屏幕下都能较好的显示。</li>
+<li>如果你是中文用户，则建议修改 <code>language</code> 的值为 <code>zh-CN</code>。</li>
+</ul>
+<p>最后在根目录使用一下命令：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">hexo clean
+hexo g
+hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>完成以上操作就可以更改主题了。</p>
+<p>其他更多的配置修改方法见 <a target="_blank" rel="noopener" href="https://github.com/blinkfox/hexo-theme-matery/blob/develop/README_CN.md">官方手册</a> 。</p>
+<p>效果图：</p>
+<p>![image-20220424232123575](&#x2F;Users&#x2F;wangzhenghan&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220424232123575.png)</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26625249">GitHub+Hexo 搭建个人网站详细教程</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/blinkfox/hexo-theme-matery/blob/develop/README_CN.md">hexo中文手册</a></p>
 
                 
             </div>
@@ -515,7 +569,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://unrav31.github.io/2022/04/24/hello-world/">https://unrav31.github.io/2022/04/24/hello-world/</a>
+                    <a href="https://unrav31.github.io/2022/04/24/hexo-da-jian-bo-ke/">https://unrav31.github.io/2022/04/24/hexo-da-jian-bo-ke/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -552,7 +606,11 @@
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
+                            
+                                <a href="/tags/%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83/">
+                                    <span class="chip bg-color">安装环境</span>
+                                </a>
+                            
                         </div>
                     
                 </div>
@@ -724,9 +782,10 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
                 <a href="/2022/04/24/hexo-da-jian-bo-ke/">
                     <div class="card-image">
@@ -744,9 +803,9 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-04-24
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-24
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -755,6 +814,7 @@
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -770,7 +830,7 @@
         
         <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge right-badge text-color">
-                本篇&nbsp;<i class="far fa-dot-circle"></i>
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
                 <a href="/2022/04/24/hello-world/">
@@ -800,7 +860,6 @@
                         </span>
                     </div>
                 </div>
-
                 
             </div>
         </div>
