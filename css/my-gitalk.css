@@ -117,11 +117,11 @@ ol li {
 }
 
 table tr:nth-child(2n), thead {
-    background-color: #fafafa;
+    background-color: #161D2A;
 }
 
 .markdown-body table th {
-    background-color: #f2f2f2;
+    background-color: #161D2A;
     min-width: 80px;
 }
 
@@ -196,7 +196,7 @@ table tr:nth-child(2n), thead {
     padding: 1px 1px;
     font-size: 0.92rem;
     color: #e96900;
-    background-color: #f8f8f8;
+    background-color: #161D2A;
     border-radius: 2px;
 }
 
@@ -244,6 +244,6 @@ strong {
 }
 
 .markdown-body mark {
-    background-color: #fcf8e3;
+    background-color: #161D2A;
     padding: .2em;
 }
