@@ -464,14 +464,14 @@ blog文件夹">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    465
+                    663
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    1 分
+                    2 分
                 </div>
                 
 
@@ -537,10 +537,18 @@ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
 hexo g
 hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<p>完成以上操作就可以更改主题了。</p>
+<p>以上操作就完成更改主题了。</p>
 <p>其他更多的配置修改方法见 <a target="_blank" rel="noopener" href="https://github.com/blinkfox/hexo-theme-matery/blob/develop/README_CN.md">官方手册</a> 。</p>
 <p>效果图：</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220424232123575.png?token=ATQEVQUFDYSYS5EO5RXOJILCMYC5K" alt="image-20220424232123575"></p>
+<h1 id="设置图床"><a href="#设置图床" class="headerlink" title="设置图床"></a>设置图床</h1><p>图片在 typora 中是本地文件存储的，在hexo部署之后无法查看图片，这时需要在远程搭建一个图床。</p>
+<p>图床可以有多种方式，我这里选择 github 作为图床，因为它免费。</p>
+<p>首先在 github 新建一个仓库，需要是公开的仓库否则无法查看图片。然后下载 <a target="_blank" rel="noopener" href="https://github.com/Molunerfinn/picgo/releases">PicGo</a> 进行设置：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425135339804.png" alt="image-20220425135339804"></p>
+<p>token 就是 github 的访问 token，分支按照创建仓库时的分支填写，仓库名称是 [用户名&#x2F;仓库名] 的形式。</p>
+<p>最后在 typora 设置中设置自动生成图床链接。点击「偏好设置」，设置如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425135810193.png" alt="image-20220425135810193"></p>
+<p>然后在 typora 中粘贴图片就可以上传到图床啦，最后再次部署hexo，整个过程就完成了。</p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26625249">GitHub+Hexo 搭建个人网站详细教程</a></p>
 <p><a target="_blank" rel="noopener" href="https://github.com/blinkfox/hexo-theme-matery/blob/develop/README_CN.md">hexo中文手册</a></p>
 
