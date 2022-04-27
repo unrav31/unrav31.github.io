@@ -455,14 +455,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.7k
+                    2.5k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    7 分
+                    11 分
                 </div>
                 
 
@@ -690,6 +690,112 @@ simulation<span class="token punctuation">.</span>explore<span class="token punc
 
 <p>最后很快得到结果”HETOBRCU”</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427111953296.png" alt="image-20220427111953296"></p>
+<h1 id="Part-2-angr-symbolic-registers"><a href="#Part-2-angr-symbolic-registers" class="headerlink" title="Part 2 angr symbolic registers"></a>Part 2 angr symbolic registers</h1><p>现在考虑一种情况，如果 angr 无法从指定的地址开始符号执行该如何处理？换个说法，angr 在处理类似 <code>scanf(&quot;%x %x %x&quot;, &amp;a, &amp;b, &amp;c)</code> 这种输入方式的时候尤为吃力，就得考虑另外一种办法。我们可以跳过这个输入函数，在用到输入参数的时候我们自定义寄存器的值，这样就可以达到我们的目的。</p>
+<p>首先老规矩，先在 IDA 看看二进制程序 03_angr_symbolic_registers。主函数中 <code>get_user_input</code> 接收用户输入，将用户输入经过 <code>complex_function</code> 的处理，最后输出”Good Job”或”Try again”：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427140721086.png" alt="image-20220427140721086"></p>
+<p>再看看 <code>get_user_input</code> 函数，正如上面说的那样，使用 <code>scanf</code> 这种复杂的方式接受输入。它将参数依次给了 EAX、EBX、EDX寄存器，了解参数传递的寄存器有利于使用 angr 进行参数模拟：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427141347745.png" alt="image-20220427141347745"></p>
+<p>然后查看 scaffold03.py 代码：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> claripy
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+  start_address <span class="token operator">=</span> ???  <span class="token comment"># :integer (probably hexadecimal)</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>blank_state<span class="token punctuation">(</span>addr<span class="token operator">=</span>start_address<span class="token punctuation">)</span>
+  
+  password0_size_in_bits <span class="token operator">=</span> ???  <span class="token comment"># :integer</span>
+  password0 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password0'</span><span class="token punctuation">,</span> password0_size_in_bits<span class="token punctuation">)</span>
+  
+  initial_state<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>??? <span class="token operator">=</span> password0
+  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+
+  <span class="token keyword">def</span> <span class="token function">is_successful</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> ???
+
+  <span class="token keyword">def</span> <span class="token function">should_abort</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> ???
+
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>is_successful<span class="token punctuation">,</span> avoid<span class="token operator">=</span>should_abort<span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    
+    solution0 <span class="token operator">=</span> solution_state<span class="token punctuation">.</span>se<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password0<span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    solution <span class="token operator">=</span> ???  <span class="token comment"># :string</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>solution<span class="token punctuation">)</span>
+    
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>首先 <code>start_address</code> 依然设置我们希望的起始地址，也就是调用 <code>scanf</code> 之后的地址 0x08048937。然后注意这里是使用的 <code>blank_state</code> 而不是 <code>entry_state</code>，实际上是告诉 angr 在该地址创建一个新的 state。<code>claripy.BVS</code> 表示使用 claripy 中的 <code>BVS</code> 方法生成位向量，它有两个参数，第一个参数”password0”就像是方程里面的符号“x”，第二个参数 <code>password0_size_in_bits</code> 表示所用的数值的二进制位数，<code>int</code> 型就是32位。<code>initial_state.regs</code> 将使用创建的位向量，将值指定给寄存器。之后定义 <code>find</code> 和 <code>avoid</code> 状态。<code>solution_state.se.eval</code> 方法可以看作是求解定义的位向量，最后打印求解的结果。</p>
+<p>依照上面分析的结果修改代码，但是有一个问题，那就是在我们的起始地址在 <code>scanf</code> 函数之后，函数返回需要平衡栈，也就是说还得伪造一个栈的内容。其实这就有点过于复杂了，再次观察代码可以得知在 <code>get_user_input</code> 函数返回之后将参数给到了 EAX、EBX、EDX，我们可以直接从这里开始给寄存器赋值就行了：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427144214207.png" alt="image-20220427144214207"></p>
+<p>完整代码如下：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> claripy
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> <span class="token string">"./03_angr_symbolic_registers"</span>
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+
+  start_address <span class="token operator">=</span> <span class="token number">0x08048980</span>  <span class="token comment"># :integer (probably hexadecimal)</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>blank_state<span class="token punctuation">(</span>addr<span class="token operator">=</span>start_address<span class="token punctuation">)</span>
+
+  password_size_in_bits <span class="token operator">=</span> <span class="token number">32</span>  <span class="token comment"># :integer</span>
+  password0 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password0'</span><span class="token punctuation">,</span> password_size_in_bits<span class="token punctuation">)</span>
+  password1 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password1'</span><span class="token punctuation">,</span> password_size_in_bits<span class="token punctuation">)</span>
+  password2 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password2'</span><span class="token punctuation">,</span> password_size_in_bits<span class="token punctuation">)</span>
+  
+  initial_state<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>eax <span class="token operator">=</span> password0
+  initial_state<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ebx <span class="token operator">=</span> password1
+  initial_state<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edx <span class="token operator">=</span> password2
+
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+
+  <span class="token keyword">def</span> <span class="token function">is_successful</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">b'Good Job.\n'</span> <span class="token keyword">in</span> stdout_output<span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+  <span class="token keyword">def</span> <span class="token function">should_abort</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">b'Try again.\n'</span> <span class="token keyword">in</span> stdout_output<span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>is_successful<span class="token punctuation">,</span> avoid<span class="token operator">=</span>should_abort<span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+    solution0 <span class="token operator">=</span> <span class="token builtin">format</span><span class="token punctuation">(</span>solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password0<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span>
+    solution1 <span class="token operator">=</span> <span class="token builtin">format</span><span class="token punctuation">(</span>solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password1<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span>
+    solution2 <span class="token operator">=</span> <span class="token builtin">format</span><span class="token punctuation">(</span>solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password2<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span>
+
+    solution <span class="token operator">=</span> solution0 <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> solution1 <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> solution2  <span class="token comment"># :string</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>solution<span class="token punctuation">)</span>
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>运行后得到结果：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220427145237549.png" alt="image-20220427145237549"></p>
 
                 
             </div>
