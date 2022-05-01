@@ -456,14 +456,14 @@ Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设�
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    666
+                    1.2k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    3 分
+                    5 分
                 </div>
                 
 
@@ -482,9 +482,9 @@ Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设�
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <p>上一篇：<a href="https://unrav31.github.io/2022/04/26/angr-ru-men/">angr入门</a></p>
-<h1 id="Part-4-angr-symbolic-memory"><a href="#Part-4-angr-symbolic-memory" class="headerlink" title="Part 4 angr symbolic memory"></a>Part 4 angr symbolic memory</h1><p>这次以一个例题来学习如何在 angr 中设置指定地址的值。用 IDA 打开 05_angr_symbolic_memory 文件，查看函数逻辑。依然是使用 scanf 函数读取输入，输入的内容放入了全局变量的四个地址中，可以观察到这个地址并非常规的 bss 段地址，而是一个自定义的内存地址，随后使用 complex_function 对输入的内容进行处理，最后需要和给出的字符串相同：</p>
+<h1 id="Part-4-angr-symbolic-memory"><a href="#Part-4-angr-symbolic-memory" class="headerlink" title="Part 4 angr symbolic memory"></a>Part 4 angr symbolic memory</h1><p>这次以一个例题来学习如何在 angr 中设置指定地址的值。用 IDA 打开 05_angr_symbolic_memory 文件，查看函数逻辑。依然是使用 <code>scanf</code> 函数读取输入，输入的内容放入了全局变量的四个地址中，可以观察到这个地址并非常规的 bss 段地址，而是一个自定义的内存地址，随后使用 <code>complex_function</code> 对输入的内容进行处理，最后需要和给出的字符串相同：</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501103834228.png" alt="image-20220501103834228"></p>
-<p>根据之前学习过的 angr 使用方法，可以在 scanf 函数之后符号执行，但是这里有了四个指定的内存地址，需要使用它们进行求解。查看 scaffold05.py 内容如下：</p>
+<p>根据之前学习过的 angr 使用方法，可以在 <code>scanf</code> 函数之后符号执行，但是这里有了四个指定的内存地址，需要使用它们进行求解。查看 scaffold05.py 内容如下：</p>
 <pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
 <span class="token keyword">import</span> claripy
 <span class="token keyword">import</span> sys
@@ -601,6 +601,89 @@ Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设�
 </ul>
 <p>最后得到结果：</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501110026973.png" alt="image-20220501110026973"></p>
+<h1 id="Part-5-angr-symbolic-dynamic-memory"><a href="#Part-5-angr-symbolic-dynamic-memory" class="headerlink" title="Part 5 angr symbolic dynamic memory"></a>Part 5 angr symbolic dynamic memory</h1><p>其实这一部分和 Part 4 原理差不多，只是将输入内容存储到了分配的堆块内容中，这部分来看看如何应对这种随机地址的问题。</p>
+<p>使用 IDA 查看程序逻辑，依然是用 <code>scanf</code> 获取输入，存储到 <code>malloc</code> 函数返回的地址中，<code>buffer0</code> 和 <code>buffer1</code> 都是 bss 段地址，随后对输入进行处理，最后分别对比两个地址内容，成功输出”Good Job”，失败输出”Try again”：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501113842249.png" alt="image-20220501113842249"></p>
+<p>其实 angr 并没有真正的执行程序，所以说在符号执行 <code>malloc</code> 的时候并不是真正的分配了一个堆块，我们只需要分别随意写一个地址到 <code>buffer0</code> 和 <code>buffer1</code> 全局变量中即可。接下来查看完整代码：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> claripy
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> <span class="token string">"./06_angr_symbolic_dynamic_memory"</span>
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+
+  start_address <span class="token operator">=</span> <span class="token number">0x08048699</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>blank_state<span class="token punctuation">(</span>addr<span class="token operator">=</span>start_address<span class="token punctuation">)</span>
+
+  password0 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password0'</span><span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">)</span>
+  password1 <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password1'</span><span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">)</span>
+
+  fake_heap_address0 <span class="token operator">=</span> <span class="token number">0x12345678</span>
+  pointer_to_malloc_memory_address0 <span class="token operator">=</span> <span class="token number">0x0ABCC8A4</span>
+  fake_heap_address1 <span class="token operator">=</span> <span class="token number">0x12345680</span>
+  pointer_to_malloc_memory_address1 <span class="token operator">=</span> <span class="token number">0x0ABCC8AC</span>
+  initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>pointer_to_malloc_memory_address0<span class="token punctuation">,</span> fake_heap_address0<span class="token punctuation">,</span> endness<span class="token operator">=</span>project<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>memory_endness<span class="token punctuation">)</span>
+  initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>pointer_to_malloc_memory_address1<span class="token punctuation">,</span> fake_heap_address1<span class="token punctuation">,</span> endness<span class="token operator">=</span>project<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>memory_endness<span class="token punctuation">)</span>
+
+  initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>fake_heap_address0<span class="token punctuation">,</span> password0<span class="token punctuation">)</span>
+  initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>fake_heap_address1<span class="token punctuation">,</span> password1<span class="token punctuation">)</span>
+
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+
+  <span class="token keyword">def</span> <span class="token function">is_successful</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">b'Good Job.'</span> <span class="token keyword">in</span> stdout_output<span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+  <span class="token keyword">def</span> <span class="token function">should_abort</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">b'Try again.'</span> <span class="token keyword">in</span> stdout_output<span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>is_successful<span class="token punctuation">,</span> avoid<span class="token operator">=</span>should_abort<span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+    solution0 <span class="token operator">=</span> solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password0<span class="token punctuation">,</span>cast_to<span class="token operator">=</span><span class="token builtin">bytes</span><span class="token punctuation">)</span>
+    solution1 <span class="token operator">=</span> solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password1<span class="token punctuation">,</span>cast_to<span class="token operator">=</span><span class="token builtin">bytes</span><span class="token punctuation">)</span>
+    solution <span class="token operator">=</span> solution0 <span class="token operator">+</span> <span class="token string">b' '</span> <span class="token operator">+</span> solution1
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>solution<span class="token punctuation">)</span>
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>代码解读：</p>
+<ul>
+<li><p><code>start_address</code> 依然是 <code>scanf</code> 函数结尾，并且是循环开始的地址</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501114723729.png" alt="image-20220501114723729"></p>
+</li>
+<li><p><code>claripy.BVS(&#39;password&#39;, 64)</code> 输入的也是 8 字节，所以是 64 位</p>
+</li>
+<li><p>接下来这段代码，分别将伪造的堆地址 0x12345678、 0x12345680 写入到全局变量 <code>buffer0</code>、<code>buffer1</code> 中：</p>
+</li>
+</ul>
+  <pre class="line-numbers language-python" data-language="python"><code class="language-python">fake_heap_address0 <span class="token operator">=</span> <span class="token number">0x12345678</span>
+pointer_to_malloc_memory_address0 <span class="token operator">=</span> <span class="token number">0x0ABCC8A4</span>
+fake_heap_address1 <span class="token operator">=</span> <span class="token number">0x12345680</span>
+pointer_to_malloc_memory_address1 <span class="token operator">=</span> <span class="token number">0x0ABCC8AC</span>
+initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>pointer_to_malloc_memory_address0<span class="token punctuation">,</span> fake_heap_address0<span class="token punctuation">,</span> endness<span class="token operator">=</span>project<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>memory_endness<span class="token punctuation">)</span>
+initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>pointer_to_malloc_memory_address1<span class="token punctuation">,</span> fake_heap_address1<span class="token punctuation">,</span> endness<span class="token operator">=</span>project<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>memory_endness<span class="token punctuation">)</span>
+  
+initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>fake_heap_address0<span class="token punctuation">,</span> password0<span class="token punctuation">)</span>
+initial_state<span class="token punctuation">.</span>memory<span class="token punctuation">.</span>store<span class="token punctuation">(</span>fake_heap_address1<span class="token punctuation">,</span> password1<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>把伪造地址给了 <code>buffer0</code> 和 <code>buffer1</code> 之后，处理起来就和 Part4 的过程一样了。最后求解得到结果：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501113539990.png" alt="image-20220501113539990"></p>
 
                 
             </div>
