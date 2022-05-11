@@ -5,8 +5,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="keywords" content="angr入门(二), Hexo">
-    <meta name="description" content="上一篇：angr入门
-Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设置指定地址的值。用 IDA 打开 05_angr_symbolic_memory 文件，查看函数逻辑。依然是使用 scan">
+    <meta name="description" content="有了上一篇 angr入门 的铺垫后，现在学习一下 angr 如何给指定内存地址赋值。
+Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设置指定地址的值。用 IDA 打开 05_angr_symb">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -456,14 +456,14 @@ Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设�
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.2k
+                    1.6k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    5 分
+                    7 分
                 </div>
                 
 
@@ -481,7 +481,7 @@ Part 4 angr symbolic memory这次以一个例题来学习如何在 angr 中设�
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>上一篇：<a href="https://unrav31.github.io/2022/04/26/angr-ru-men/">angr入门</a></p>
+                <p>有了上一篇 <a href="https://unrav31.github.io/2022/04/26/angr-ru-men/">angr入门</a> 的铺垫后，现在学习一下 angr 如何给指定内存地址赋值。</p>
 <h1 id="Part-4-angr-symbolic-memory"><a href="#Part-4-angr-symbolic-memory" class="headerlink" title="Part 4 angr symbolic memory"></a>Part 4 angr symbolic memory</h1><p>这次以一个例题来学习如何在 angr 中设置指定地址的值。用 IDA 打开 05_angr_symbolic_memory 文件，查看函数逻辑。依然是使用 <code>scanf</code> 函数读取输入，输入的内容放入了全局变量的四个地址中，可以观察到这个地址并非常规的 bss 段地址，而是一个自定义的内存地址，随后使用 <code>complex_function</code> 对输入的内容进行处理，最后需要和给出的字符串相同：</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501103834228.png" alt="image-20220501103834228"></p>
 <p>根据之前学习过的 angr 使用方法，可以在 <code>scanf</code> 函数之后符号执行，但是这里有了四个指定的内存地址，需要使用它们进行求解。查看 scaffold05.py 内容如下：</p>
@@ -684,6 +684,70 @@ initial_state<span class="token punctuation">.</span>memory<span class="token pu
 
 <p>把伪造地址给了 <code>buffer0</code> 和 <code>buffer1</code> 之后，处理起来就和 Part4 的过程一样了。最后求解得到结果：</p>
 <p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220501113539990.png" alt="image-20220501113539990"></p>
+<h1 id="Part-6-angr-symbolic-file"><a href="#Part-6-angr-symbolic-file" class="headerlink" title="Part 6 angr symbolic file"></a>Part 6 angr symbolic file</h1><p>07_angr_symbolic_file 例子可以用于学习如何模拟一个文件系统，当然还可以用之前学习过的方式解决问题。IDA 分析文件，使用 <code>fread</code> 函数从文件中读取内容，处理后进行对比，如果正确输出”Good Job”，<code>ignore_me</code> 将输入内容写入到文件中，是需要绕过的函数：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220502111158805.png" alt="image-20220502111158805"></p>
+<p>现在要处理的问题：</p>
+<ul>
+<li>确定 <code>fread</code> 读取的文件</li>
+<li>使用 angr 模拟一个文件系统，替换 <code>fread</code> 读取的文件为我们自己的文件</li>
+<li>用符号值初始化文件，用 <code>fread</code> 读取并传播求解，最后得到正确密码</li>
+</ul>
+<p>首先确定 <code>start_address</code> 。通过分析，程序从 0x080488EA 开始打开 OJKSQYDP.txt 文件：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220502122135428.png" alt="image-20220502122135428"></p>
+<p>然后指定模拟文件所需的信息，程序中打开的文件名称是固定的，可以用符号替换文件名。由 <code>%64s</code> 可以得知写入的文件大小为 64 字节，但实际只循环读取了 8 字节，在创建向量的时候就是 64 位。然后使用 angr 的 <code>SimFile</code> 模块模拟文件系统：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">filename <span class="token operator">=</span> <span class="token string">'OJKSQYDP.txt'</span>  
+symbolic_file_size_bytes <span class="token operator">=</span> <span class="token number">64</span>
+
+password <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password'</span><span class="token punctuation">,</span> symbolic_file_size_bytes<span class="token punctuation">)</span>
+password_file <span class="token operator">=</span> angr<span class="token punctuation">.</span>storage<span class="token punctuation">.</span>SimFile<span class="token punctuation">(</span>filename<span class="token punctuation">,</span>  content<span class="token operator">=</span>password<span class="token punctuation">,</span>size<span class="token operator">=</span>symbolic_file_size_bytes<span class="token punctuation">)</span>
+initial_state<span class="token punctuation">.</span>fs<span class="token punctuation">.</span>insert<span class="token punctuation">(</span>filename<span class="token punctuation">,</span>password_file<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>之后就是指定 <code>find</code> 和 <code>avoid</code>。完整代码如下：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> angr
+<span class="token keyword">import</span> claripy
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>argv<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  path_to_binary <span class="token operator">=</span> <span class="token string">'./07_angr_symbolic_file'</span>
+  project <span class="token operator">=</span> angr<span class="token punctuation">.</span>Project<span class="token punctuation">(</span>path_to_binary<span class="token punctuation">)</span>
+
+  start_address <span class="token operator">=</span> <span class="token number">0x080488D6</span>
+  initial_state <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>blank_state<span class="token punctuation">(</span>addr<span class="token operator">=</span>start_address<span class="token punctuation">)</span>
+  
+  filename <span class="token operator">=</span> <span class="token string">'OJKSQYDP.txt'</span>  <span class="token comment"># :string</span>
+  symbolic_file_size_bytes <span class="token operator">=</span> <span class="token number">64</span>
+
+  password <span class="token operator">=</span> claripy<span class="token punctuation">.</span>BVS<span class="token punctuation">(</span><span class="token string">'password'</span><span class="token punctuation">,</span> symbolic_file_size_bytes<span class="token punctuation">)</span>
+  password_file <span class="token operator">=</span> angr<span class="token punctuation">.</span>storage<span class="token punctuation">.</span>SimFile<span class="token punctuation">(</span>filename<span class="token punctuation">,</span>  content<span class="token operator">=</span>password<span class="token punctuation">,</span>size<span class="token operator">=</span>symbolic_file_size_bytes<span class="token punctuation">)</span>
+  initial_state<span class="token punctuation">.</span>fs<span class="token punctuation">.</span>insert<span class="token punctuation">(</span>filename<span class="token punctuation">,</span>password_file<span class="token punctuation">)</span>
+
+  simulation <span class="token operator">=</span> project<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>simgr<span class="token punctuation">(</span>initial_state<span class="token punctuation">)</span>
+
+  <span class="token keyword">def</span> <span class="token function">is_successful</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token string">'Good Job.'</span><span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> stdout_output
+
+  <span class="token keyword">def</span> <span class="token function">should_abort</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    stdout_output <span class="token operator">=</span> state<span class="token punctuation">.</span>posix<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span>fileno<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token string">'Try again.'</span><span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">in</span> stdout_output
+
+  simulation<span class="token punctuation">.</span>explore<span class="token punctuation">(</span>find<span class="token operator">=</span>is_successful<span class="token punctuation">,</span> avoid<span class="token operator">=</span>should_abort<span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">:</span>
+    solution_state <span class="token operator">=</span> simulation<span class="token punctuation">.</span>found<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+    solution <span class="token operator">=</span> solution_state<span class="token punctuation">.</span>solver<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span>password<span class="token punctuation">,</span>cast_to<span class="token operator">=</span><span class="token builtin">bytes</span><span class="token punctuation">)</span><span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>solution<span class="token punctuation">)</span>
+  <span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string">'Could not find the solution'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+  main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>最后求得密码：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220502122600085.png" alt="image-20220502122600085"></p>
 
                 
             </div>
@@ -797,18 +861,17 @@ initial_state<span class="token punctuation">.</span>memory<span class="token pu
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2022/05/01/angr-ru-men-er/">
+                <a href="/2022/05/11/tenda-ax1806-lu-you-qi-duo-chu-zhan-yi-chu-lou-dong/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="angr入门(二)">
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="Tenda AX1806路由器多处栈溢出漏洞">
                         
-                        <span class="card-title">angr入门(二)</span>
+                        <span class="card-title">Tenda AX1806路由器多处栈溢出漏洞</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -818,9 +881,9 @@ initial_state<span class="token punctuation">.</span>memory<span class="token pu
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-05-01
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-05-11
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -829,12 +892,11 @@ initial_state<span class="token punctuation">.</span>memory<span class="token pu
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/symbolic-execution/">
-                        <span class="chip bg-color">symbolic execution</span>
+                    <a href="/tags/CVE/">
+                        <span class="chip bg-color">CVE</span>
                     </a>
                     
                 </div>
