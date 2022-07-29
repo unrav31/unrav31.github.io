@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="keywords" content="从一道CTF题目学习KVM, Hexo">
-    <meta name="description" content="从一道CTF题目学习KVMKVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Lin">
+    <meta name="description" content="KVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Linux 原生的全虚拟化解决方">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -480,7 +480,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="从一道CTF题目学习KVM"><a href="#从一道CTF题目学习KVM" class="headerlink" title="从一道CTF题目学习KVM"></a>从一道CTF题目学习KVM</h1><p>KVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Linux 原生的全虚拟化解决方案。</p>
+                <p>KVM 全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux 的一个内核模块，KVM基于虚拟化扩展（Intel VT 或者 AMD-V）的 X86 硬件的开源的 Linux 原生的全虚拟化解决方案。</p>
 <p>KVM 本身不执行任何硬件模拟，需要用户空间程序（QEMU）通过 <strong>&#x2F;dev&#x2F;kvm</strong> 接口设置一个客户机虚拟服务器的地址空间，向它提供模拟 I&#x2F;O，并将它的视频显示映射回宿主的显示屏。</p>
 <h1 id="题目逆向分析"><a href="#题目逆向分析" class="headerlink" title="题目逆向分析"></a>题目逆向分析</h1><p>题目来源于ACTF 2022的一道PWN题，给出四个文件，二进制程序在bin文件夹下，其余都是题目部署所用到的文件，可以用docker搭建题目，后面会讲到：</p>
 <pre class="line-numbers language-none"><code class="language-none">├── bin
